@@ -1,0 +1,80 @@
+package com.example.starter_backend.controller;
+
+import com.example.starter_backend.StarterBackendApplication;
+import com.example.starter_backend.entity.Member;
+import com.example.starter_backend.repository.MemberRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDate;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+
+//@SpringBootTest  // loads full application context
+@SpringBootTest(classes = StarterBackendApplication.class)
+@AutoConfigureMockMvc  // auto-configures MockMvc for web layer testing
+public class MemberControllerIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private Member testMember;
+
+    @BeforeEach
+    void setup() {
+        // Clean DB before each test
+        memberRepository.deleteAll();
+
+        // Initialize a test member entity
+        testMember = new Member();
+        testMember.setName("John Doe");
+        testMember.setAddress("123 Test St");
+        testMember.setContactInfo("john@example.com");
+        testMember.setRegistrationDate(LocalDate.now());
+        testMember.setMembershipExpiryDate(LocalDate.now().plusYears(1));
+
+        // Save test member
+        testMember = memberRepository.save(testMember);
+    }
+
+    @Test
+    void testGetMemberById() throws Exception {
+        mockMvc.perform(get("/api/members/{id}", testMember.getId())
+                .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.name").value(testMember.getName()))
+            .andExpect(jsonPath("$.address").value(testMember.getAddress()))
+            .andExpect(jsonPath("$.contactInfo").value(testMember.getContactInfo()));
+    }
+
+    @Test
+    void testCreateMember() throws Exception {
+        Member newMember = new Member();
+        newMember.setName("Jane Smith");
+        newMember.setAddress("456 Example Rd");
+        newMember.setContactInfo("jane@example.com");
+        newMember.setRegistrationDate(LocalDate.now());
+
+        mockMvc.perform(post("/api/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(newMember)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.name").value("Jane Smith"));
+    }
+
+    // More tests like updateMember, deleteMember, searchMembersByName can be added similarly
+}
