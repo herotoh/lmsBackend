@@ -26,8 +26,17 @@ public class Loan {
     private String status; // BORROWED, RETURNED, OVERDUE
 
     public Loan() {}
+@Column(name = "fine")
+private Double fine = 0.0;
 
     // Getters and setters...
+public Double getFine() {
+    return fine;
+}
+
+public void setFine(Double fine) {
+    this.fine = fine;
+}
 
     public Long getId() {
     return id;

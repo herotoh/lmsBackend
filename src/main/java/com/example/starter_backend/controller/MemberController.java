@@ -1,8 +1,13 @@
 package com.example.starter_backend.controller;
+import com.example.starter_backend.dto.MemberDTO;
 
 import com.example.starter_backend.entity.Member;
 import com.example.starter_backend.service.MemberService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,7 +55,15 @@ public class MemberController {
     public Member addMember(@RequestBody Member member) {
         return memberService.addMember(member);
     }
-
+    public ResponseEntity<Member> createMember(@Valid @RequestBody MemberDTO memberDTO) {
+        Member member = new Member();
+        member.setName(memberDTO.getName());
+        member.setAddress(memberDTO.getAddress());
+        member.setContactInfo(memberDTO.getContactInfo());
+        member.setRegistrationDate(memberDTO.getRegistrationDate());
+        Member saved = memberService.addMember(member);
+        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+    }
     /**
      * PUT endpoint to update an existing member.
      * @param id The ID of the member to update
