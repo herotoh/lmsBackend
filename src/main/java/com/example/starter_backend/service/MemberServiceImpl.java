@@ -71,7 +71,8 @@ public class MemberServiceImpl implements MemberService {
         existingMember.setName(memberDetails.getName());
         existingMember.setAddress(memberDetails.getAddress());
         existingMember.setContactInfo(memberDetails.getContactInfo());
-        // Do not update registrationDate or membershipExpiryDate to maintain consistency
+
+        // Update registration and expiry dates only if provided
         if (memberDetails.getRegistrationDate() != null) {
             existingMember.setRegistrationDate(memberDetails.getRegistrationDate());
             existingMember.setMembershipExpiryDate(memberDetails.getRegistrationDate().plusYears(1));
@@ -101,10 +102,7 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     public List<Member> searchMembersByName(String name) {
-        // This is a placeholder. For a real implementation, you would need a custom query method in MemberRepository.
-        // For now, we'll simulate a simple filter (case-insensitive).
-        return memberRepository.findAll().stream()
-                .filter(member -> member.getName().toLowerCase().contains(name.toLowerCase()))
-                .toList();
+        // Use custom query from repository
+        return memberRepository.findByNameContainingIgnoreCase(name);
     }
 }
