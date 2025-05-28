@@ -1,28 +1,70 @@
-package com.example.starter_backend.dto;
+package com.example.starter_backend.entity;
+
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
-public class MemberDTO {
+@Entity
+public class Member {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "address")
     private String address;
+
+    @Column(name = "contact_info", nullable = false)
     private String contactInfo;
-    private String email;
-    private String nric;
-    private String mobile;
-    private String remark;
-    private LocalDate birthday;
-    private String sex;
+
+    @Column(name = "registration_date", nullable = false)
     private LocalDate registrationDate;
+
+    @Column(name = "membership_expiry_date", nullable = false)
     private LocalDate membershipExpiryDate;
 
-    public MemberDTO() {}
+    @Column(name = "email")
+    private String email;
 
-    // Getters and setters for all fields
+    @Column(name = "nric")
+    private String nric;
+
+    @Column(name = "mobile")
+    private String mobile;
+
+    @Column(name = "remark")
+    private String remark;
+
+    @Column(name = "birthday")
+    private LocalDate birthday;
+
+    @Column(name = "sex")
+    private String sex;
+
+    // One-to-One relationship with User
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
+    private User user;
+
+    public Member() {
+    }
+
+    // Getters and Setters
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -30,6 +72,7 @@ public class MemberDTO {
     public String getAddress() {
         return address;
     }
+
     public void setAddress(String address) {
         this.address = address;
     }
@@ -37,55 +80,15 @@ public class MemberDTO {
     public String getContactInfo() {
         return contactInfo;
     }
+
     public void setContactInfo(String contactInfo) {
         this.contactInfo = contactInfo;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getNric() {
-        return nric;
-    }
-    public void setNric(String nric) {
-        this.nric = nric;
-    }
-
-    public String getMobile() {
-        return mobile;
-    }
-    public void setMobile(String mobile) {
-        this.mobile = mobile;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
-    public LocalDate getBirthday() {
-        return birthday;
-    }
-    public void setBirthday(LocalDate birthday) {
-        this.birthday = birthday;
-    }
-
-    public String getSex() {
-        return sex;
-    }
-    public void setSex(String sex) {
-        this.sex = sex;
     }
 
     public LocalDate getRegistrationDate() {
         return registrationDate;
     }
+
     public void setRegistrationDate(LocalDate registrationDate) {
         this.registrationDate = registrationDate;
     }
@@ -93,7 +96,64 @@ public class MemberDTO {
     public LocalDate getMembershipExpiryDate() {
         return membershipExpiryDate;
     }
+
     public void setMembershipExpiryDate(LocalDate membershipExpiryDate) {
         this.membershipExpiryDate = membershipExpiryDate;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getNric() {
+        return nric;
+    }
+
+    public void setNric(String nric) {
+        this.nric = nric;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    public LocalDate getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(LocalDate birthday) {
+        this.birthday = birthday;
+    }
+
+    public String getSex() {
+        return sex;
+    }
+
+    public void setSex(String sex) {
+        this.sex = sex;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

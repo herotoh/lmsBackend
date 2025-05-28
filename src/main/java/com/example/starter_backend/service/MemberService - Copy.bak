@@ -22,15 +22,16 @@ public interface MemberService {
      * @return Optional containing the member if found, empty otherwise
      */
     Optional<Member> getMemberById(Long id);
+
     
     Optional<Member> getMemberByUsername(String username);
 
     /**
      * Adds a new member to the database.
      * @param member The member to add
-     * @return The saved member // Ensure this return type is consistent
+     * @return The saved member
      */
-    Member addMember(Member member); // Returns the saved member, crucial for linking
+    Member addMember(Member member);
 
     /**
      * Updates an existing member in the database.
@@ -39,8 +40,7 @@ public interface MemberService {
      * @return The updated member
      */
     Member updateMember(Long id, Member memberDetails);
-    Member updateMember(Member member); // Keep this overload if used elsewhere
-
+    Member updateMember(Member member);
     /**
      * Deletes a member from the database by their ID.
      * @param id The ID of the member to delete

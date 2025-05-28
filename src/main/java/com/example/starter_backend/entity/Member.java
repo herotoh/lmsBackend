@@ -1,47 +1,50 @@
 package com.example.starter_backend.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 
-/**
- * Represents a member in the library management system.
- * This entity maps to the 'member' table in the database.
- */
 @Entity
+@Table(name = "member")
 public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Unique identifier for each member
+    private Long id;
 
-    @Column(name = "name", nullable = false)
-    private String name; // Full name of the member
+    private String name;
 
-    @Column(name = "address")
-    private String address; // Address of the member
+    private String address;
 
-    @Column(name = "contact_info", nullable = false)
-    private String contactInfo; // Contact information (e.g., phone number or email)
+    @Column(name = "contact_info")
+    private String contactInfo;
 
-    @Column(name = "registration_date", nullable = false)
-    private LocalDate registrationDate; // Date when the member registered
+    @Column(name = "email")
+    private String email;
 
-    @Column(name = "membership_expiry_date", nullable = false)
-    private LocalDate membershipExpiryDate; // Date when membership expires (1 year from registration)
+    private String nric;
 
-    // Default constructor (required by JPA)
-    public Member() {
-    }
+    private String mobile;
+
+    private String remark;
+
+    private LocalDate birthday;
+
+    private String sex;
+
+    @Column(name = "registration_date")
+    private LocalDate registrationDate;
+
+    @Column(name = "membership_expiry_date")
+    private LocalDate membershipExpiryDate;
+
+    // Constructors
+    public Member() {}
 
     // Getters and Setters
+
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
@@ -49,7 +52,6 @@ public class Member {
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -57,7 +59,6 @@ public class Member {
     public String getAddress() {
         return address;
     }
-
     public void setAddress(String address) {
         this.address = address;
     }
@@ -65,15 +66,55 @@ public class Member {
     public String getContactInfo() {
         return contactInfo;
     }
-
     public void setContactInfo(String contactInfo) {
         this.contactInfo = contactInfo;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getNric() {
+        return nric;
+    }
+    public void setNric(String nric) {
+        this.nric = nric;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    public LocalDate getBirthday() {
+        return birthday;
+    }
+    public void setBirthday(LocalDate birthday) {
+        this.birthday = birthday;
+    }
+
+    public String getSex() {
+        return sex;
+    }
+    public void setSex(String sex) {
+        this.sex = sex;
     }
 
     public LocalDate getRegistrationDate() {
         return registrationDate;
     }
-
     public void setRegistrationDate(LocalDate registrationDate) {
         this.registrationDate = registrationDate;
     }
@@ -81,7 +122,6 @@ public class Member {
     public LocalDate getMembershipExpiryDate() {
         return membershipExpiryDate;
     }
-
     public void setMembershipExpiryDate(LocalDate membershipExpiryDate) {
         this.membershipExpiryDate = membershipExpiryDate;
     }
