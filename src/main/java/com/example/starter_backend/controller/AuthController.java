@@ -9,12 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException; // For parsing String to LocalDate
+import java.time.format.DateTimeParseException;
+import java.util.Optional; // <--- Ensure this import is present
 
 @RestController
-@RequestMapping("/api/auth") // Common prefix for authentication related endpoints
+@RequestMapping("/api")
 public class AuthController {
 
     @Autowired
@@ -23,9 +26,9 @@ public class AuthController {
     @Autowired
     private MemberService memberService;
 
-    @PostMapping("/register")
+    // Your existing /api/auth/register method
+    @PostMapping("/auth/register")
     public ResponseEntity<?> register(@RequestBody RegistrationRequest registrationRequest) {
-        // Basic validation (can be enhanced with @Valid and custom validators)
         if (registrationRequest.getUsername() == null || registrationRequest.getUsername().trim().isEmpty() ||
             registrationRequest.getPassword() == null || registrationRequest.getPassword().trim().isEmpty() ||
             registrationRequest.getName() == null || registrationRequest.getName().trim().isEmpty()) {
@@ -33,7 +36,6 @@ public class AuthController {
         }
 
         try {
-            // 1. Create and save the Member entity
             Member newMember = new Member();
             newMember.setName(registrationRequest.getName());
             newMember.setAddress(registrationRequest.getAddress());
@@ -43,7 +45,6 @@ public class AuthController {
             newMember.setMobile(registrationRequest.getMobile());
             newMember.setRemark(registrationRequest.getRemark());
 
-            // Handle birthday string to LocalDate conversion
             if (registrationRequest.getBirthday() != null && !registrationRequest.getBirthday().trim().isEmpty()) {
                 try {
                     newMember.setBirthday(LocalDate.parse(registrationRequest.getBirthday()));
@@ -51,29 +52,20 @@ public class AuthController {
                     return new ResponseEntity<>("Invalid birthday format. Please use YYYY-MM-DD.", HttpStatus.BAD_REQUEST);
                 }
             } else {
-                newMember.setBirthday(null); // Or some default/throw error if mandatory
+                newMember.setBirthday(null);
             }
 
             newMember.setSex(registrationRequest.getSex());
-            newMember.setRegistrationDate(LocalDate.now()); // Set current registration date
-            newMember.setMembershipExpiryDate(LocalDate.now().plusYears(1)); // Example: 1 year membership
+            newMember.setRegistrationDate(LocalDate.now());
+            newMember.setMembershipExpiryDate(LocalDate.now().plusYears(1));
 
-            // Save the member first to generate its ID
             Member savedMember = memberService.addMember(newMember);
-System.out.println("Saved Member ID: " + savedMember.getId()); // <-- Add this debug print!
-System.out.println("Saved Member Name: " + savedMember.getName()); // <-- Add this debug print!
-// Ensure savedMember is not null before proceeding
-if (savedMember.getId() == null) {
-    // This indicates a problem with memberService.addMember
-    return new ResponseEntity<>("Failed to save member details.", HttpStatus.INTERNAL_SERVER_ERROR);
-}
-            // 2. Register the User, linking it to the saved Member
-            // The 'admin' flag from the request determines the initial role
+
             User registeredUser = userService.registerUser(
                     registrationRequest.getUsername(),
                     registrationRequest.getPassword(),
-                    savedMember, // Pass the savedMember entity
-                    registrationRequest.isAdmin() // Use the admin flag from DTO
+                    savedMember,
+                    registrationRequest.isAdmin()
             );
 
             return new ResponseEntity<>("User and Member registered successfully!", HttpStatus.CREATED);
@@ -82,6 +74,38 @@ if (savedMember.getId() == null) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUserDetails(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            // This case handles situations where there's no authenticated principal
+            return new ResponseEntity<>("No authenticated user found.", HttpStatus.UNAUTHORIZED);
+        }
+
+        String username = userDetails.getUsername();
+
+        // Use Optional to handle the possibility of no user found gracefully
+        Optional<User> userOptional = userService.findByUsername(username);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            Member member = user.getMember(); // Get the associated Member
+
+            if (member != null) {
+                // Success: User found and has an associated Member. Return the Member object.
+                return ResponseEntity.ok(member); // Returns ResponseEntity<Member>
+            } else {
+                // This scenario means a User exists but is not linked to a Member.
+                // It indicates a potential data inconsistency if every User is supposed to have a Member.
+                return new ResponseEntity<>("Authenticated user has no associated member details.", HttpStatus.NOT_FOUND); // Returns ResponseEntity<String>
+            }
+        } else {
+            // This scenario means the user was authenticated by Spring Security,
+            // but their details (username) could not be found in your UserRepository.
+            // This suggests a critical data inconsistency (e.g., user deleted after login).
+            return new ResponseEntity<>("Authenticated user's details not found in database.", HttpStatus.NOT_FOUND); // Returns ResponseEntity<String>
         }
     }
 }

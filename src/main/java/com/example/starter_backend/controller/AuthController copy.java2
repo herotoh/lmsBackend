@@ -1,0 +1,94 @@
+package com.example.starter_backend.controller;
+
+import com.example.starter_backend.dto.RegistrationRequest;
+import com.example.starter_backend.entity.Member;
+import com.example.starter_backend.entity.User;
+import com.example.starter_backend.service.MemberService;
+import com.example.starter_backend.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException; // For parsing String to LocalDate
+
+// In AuthController.java (or create a new UserController.java)
+import org.springframework.security.core.annotation.AuthenticationPrincipal; // Import this
+import org.springframework.security.core.userdetails.UserDetails; // Import this
+
+
+@RestController
+@RequestMapping("/api/auth") // Common prefix for authentication related endpoints
+public class AuthController {
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private MemberService memberService;
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegistrationRequest registrationRequest) {
+        // Basic validation (can be enhanced with @Valid and custom validators)
+        if (registrationRequest.getUsername() == null || registrationRequest.getUsername().trim().isEmpty() ||
+                registrationRequest.getPassword() == null || registrationRequest.getPassword().trim().isEmpty() ||
+                registrationRequest.getName() == null || registrationRequest.getName().trim().isEmpty()) {
+            return new ResponseEntity<>("Username, Password, and Full Name are required.", HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            // 1. Create and save the Member entity
+            Member newMember = new Member();
+            newMember.setName(registrationRequest.getName());
+            newMember.setAddress(registrationRequest.getAddress());
+            newMember.setContactInfo(registrationRequest.getContactInfo());
+            newMember.setEmail(registrationRequest.getEmail());
+            newMember.setNric(registrationRequest.getNric());
+            newMember.setMobile(registrationRequest.getMobile());
+            newMember.setRemark(registrationRequest.getRemark());
+
+            // Handle birthday string to LocalDate conversion
+            if (registrationRequest.getBirthday() != null && !registrationRequest.getBirthday().trim().isEmpty()) {
+                try {
+                    newMember.setBirthday(LocalDate.parse(registrationRequest.getBirthday()));
+                } catch (DateTimeParseException e) {
+                    return new ResponseEntity<>("Invalid birthday format. Please use YYYY-MM-DD.",
+                            HttpStatus.BAD_REQUEST);
+                }
+            } else {
+                newMember.setBirthday(null); // Or some default/throw error if mandatory
+            }
+
+            newMember.setSex(registrationRequest.getSex());
+            newMember.setRegistrationDate(LocalDate.now()); // Set current registration date
+            newMember.setMembershipExpiryDate(LocalDate.now().plusYears(1)); // Example: 1 year membership
+
+            // Save the member first to generate its ID
+            Member savedMember = memberService.addMember(newMember);
+            //System.out.println("Saved Member ID: " + savedMember.getId()); // <-- Add this debug print!
+            //System.out.println("Saved Member Name: " + savedMember.getName()); // <-- Add this debug print!
+            // Ensure savedMember is not null before proceeding
+            if (savedMember.getId() == null) {
+                // This indicates a problem with memberService.addMember
+                return new ResponseEntity<>("Failed to save member details.", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            // 2. Register the User, linking it to the saved Member
+            // The 'admin' flag from the request determines the initial role
+            User registeredUser = userService.registerUser(
+                    registrationRequest.getUsername(),
+                    registrationRequest.getPassword(),
+                    savedMember, // Pass the savedMember entity
+                    registrationRequest.isAdmin() // Use the admin flag from DTO
+            );
+
+            return new ResponseEntity<>("User and Member registered successfully!", HttpStatus.CREATED);
+
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An unexpected error occurred: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+}

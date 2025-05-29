@@ -85,13 +85,14 @@ public class MemberController {
         return ResponseEntity.ok(updatedMember);
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<Member> getMyDetails(Authentication authentication) {
-        String username = authentication.getName();
-        Optional<Member> memberOpt = memberService.getMemberByUsername(username);
-        return memberOpt.map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
-}
+// REMOVE OR COMMENT OUT THIS SECTION:
+// @GetMapping("/me")
+// public ResponseEntity<Member> getMyDetails(Authentication authentication) {
+//     String username = authentication.getName();
+//     Optional<Member> memberOpt = memberService.getMemberByUsername(username);
+//     return memberOpt.map(ResponseEntity::ok)
+//                     .orElseGet(() -> ResponseEntity.notFound().build());
+// }
 
     // Delete member
     @DeleteMapping("/{id}")

@@ -3,12 +3,12 @@ package com.example.starter_backend.service;
 import com.example.starter_backend.entity.Member;
 import com.example.starter_backend.entity.User;
 import com.example.starter_backend.repository.UserRepository;
-
-import java.util.HashSet;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.Optional; // <--- Ensure this import is present
 
 @Service
 public class UserService {
@@ -23,40 +23,31 @@ public class UserService {
     }
 
     public User registerUser(String username, String password, Member member, boolean isAdmin) {
-
-         if (userRepository.findByUsername(username).isPresent()) {
-        throw new RuntimeException("Username already taken: " + username);
-    }
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new RuntimeException("Username already taken: " + username);
+        }
 
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
-        user.setMember(member); // This is where the crucial link happens
-        user.getRoles().add(isAdmin ? "ROLE_ADMIN" : "ROLE_MEMBER");
-       
-       
-        // return userRepository.save(user);
-
-
-
-         System.out.println("UserService: Attempting to register user: " + username); // <-- Debug print
-    if (member != null) {
-        System.out.println("UserService: User linked to Member ID: " + member.getId()); // <-- Debug print
-    } else {
-        System.out.println("UserService: Member object is NULL!"); // <-- Critical check!
+        user.setMember(member);
+        user.setRoles(new HashSet<>());
+        if (isAdmin) {
+            user.getRoles().add("ROLE_ADMIN");
+        } else {
+            user.getRoles().add("ROLE_MEMBER");
+        }
+        return userRepository.save(user);
     }
 
-    user.setRoles(new HashSet<>());
-    if (isAdmin) {
-        user.getRoles().add("ROLE_ADMIN");
-    } else {
-        user.getRoles().add("ROLE_MEMBER");
-    }
-
-    User savedUser = userRepository.save(user); // This saves to the users table
-    System.out.println("UserService: User saved successfully. User ID: " + savedUser.getId()); // <-- Debug print
-    return savedUser;
-
-    
+    /**
+     * Finds a User by their username.
+     * This is crucial for Spring Security to load user details and for fetching
+     * the associated Member.
+     * @param username The username to search for.
+     * @return An Optional containing the User if found, or empty if not.
+     */
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 }
