@@ -1,3 +1,4 @@
+// MemberDTO.java
 package com.example.starter_backend.dto;
 
 import java.time.LocalDate;
@@ -16,13 +17,15 @@ public class MemberDTO {
     private LocalDate registrationDate;
     private LocalDate membershipExpiryDate;
 
-    public MemberDTO() {}
+    public MemberDTO() {
+    }
 
     // Getters and setters for all fields
 
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -30,6 +33,7 @@ public class MemberDTO {
     public String getAddress() {
         return address;
     }
+
     public void setAddress(String address) {
         this.address = address;
     }
@@ -37,6 +41,7 @@ public class MemberDTO {
     public String getContactInfo() {
         return contactInfo;
     }
+
     public void setContactInfo(String contactInfo) {
         this.contactInfo = contactInfo;
     }
@@ -44,6 +49,7 @@ public class MemberDTO {
     public String getEmail() {
         return email;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }
@@ -51,6 +57,7 @@ public class MemberDTO {
     public String getNric() {
         return nric;
     }
+
     public void setNric(String nric) {
         this.nric = nric;
     }
@@ -58,6 +65,7 @@ public class MemberDTO {
     public String getMobile() {
         return mobile;
     }
+
     public void setMobile(String mobile) {
         this.mobile = mobile;
     }
@@ -65,6 +73,7 @@ public class MemberDTO {
     public String getRemark() {
         return remark;
     }
+
     public void setRemark(String remark) {
         this.remark = remark;
     }
@@ -72,6 +81,7 @@ public class MemberDTO {
     public LocalDate getBirthday() {
         return birthday;
     }
+
     public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
     }
@@ -79,6 +89,7 @@ public class MemberDTO {
     public String getSex() {
         return sex;
     }
+
     public void setSex(String sex) {
         this.sex = sex;
     }
@@ -86,6 +97,7 @@ public class MemberDTO {
     public LocalDate getRegistrationDate() {
         return registrationDate;
     }
+
     public void setRegistrationDate(LocalDate registrationDate) {
         this.registrationDate = registrationDate;
     }
@@ -93,6 +105,7 @@ public class MemberDTO {
     public LocalDate getMembershipExpiryDate() {
         return membershipExpiryDate;
     }
+
     public void setMembershipExpiryDate(LocalDate membershipExpiryDate) {
         this.membershipExpiryDate = membershipExpiryDate;
     }

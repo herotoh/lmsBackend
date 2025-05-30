@@ -3,6 +3,7 @@ package com.example.starter_backend.controller;
 import com.example.starter_backend.dto.MemberDTO;
 import com.example.starter_backend.entity.Member;
 import com.example.starter_backend.service.MemberService;
+import com.example.starter_backend.exception.MemberNotFoundException; // Import custom exception
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.Authentication; // Keep if still used elsewhere, otherwise remove
 
 @RestController
 @RequestMapping("/api/members")
@@ -49,12 +50,11 @@ public class MemberController {
         member.setBirthday(memberDTO.getBirthday());
         member.setSex(memberDTO.getSex());
         member.setRegistrationDate(memberDTO.getRegistrationDate());
-        //member.setMembershipExpiryDate(memberDTO.getMembershipExpiryDate());
         member.setMembershipExpiryDate(
-        memberDTO.getMembershipExpiryDate() != null
-        ? memberDTO.getMembershipExpiryDate()
-        : memberDTO.getRegistrationDate().plusYears(3) // or any default logic
-);
+            memberDTO.getMembershipExpiryDate() != null
+                ? memberDTO.getMembershipExpiryDate()
+                : memberDTO.getRegistrationDate().plusYears(3)
+        );
 
         Member savedMember = memberService.addMember(member);
         return new ResponseEntity<>(savedMember, HttpStatus.CREATED);
@@ -63,42 +63,51 @@ public class MemberController {
     // Update member by ID
     @PutMapping("/{id}")
     public ResponseEntity<Member> updateMember(@PathVariable Long id, @RequestBody MemberDTO memberDTO) {
-        Optional<Member> existingMemberOpt = memberService.getMemberById(id);
-        if (!existingMemberOpt.isPresent()) {
-            return ResponseEntity.notFound().build();
+        try {
+            // Retrieve the existing member first
+            Optional<Member> existingMemberOpt = memberService.getMemberById(id);
+            if (!existingMemberOpt.isPresent()) {
+                throw new MemberNotFoundException(id); // Throw custom exception if not found
+            }
+
+            Member existingMember = existingMemberOpt.get();
+
+            // Update the fields of the existing member with data from the DTO
+            existingMember.setName(memberDTO.getName());
+            existingMember.setAddress(memberDTO.getAddress());
+            existingMember.setContactInfo(memberDTO.getContactInfo());
+            existingMember.setEmail(memberDTO.getEmail());
+            existingMember.setNric(memberDTO.getNric());
+            existingMember.setMobile(memberDTO.getMobile());
+            existingMember.setRemark(memberDTO.getRemark());
+            existingMember.setBirthday(memberDTO.getBirthday());
+            existingMember.setSex(memberDTO.getSex());
+            existingMember.setRegistrationDate(memberDTO.getRegistrationDate());
+            existingMember.setMembershipExpiryDate(memberDTO.getMembershipExpiryDate());
+
+            // Pass the updated existing Member object to the service layer
+            Member updatedMember = memberService.updateMember(existingMember); // Using the overload that takes a Member object
+            return ResponseEntity.ok(updatedMember);
+        } catch (MemberNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Handle not found specifically
+        } catch (Exception ex) {
+            // Catch any other unexpected exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
-        Member existingMember = existingMemberOpt.get();
-        existingMember.setName(memberDTO.getName());
-        existingMember.setAddress(memberDTO.getAddress());
-        existingMember.setContactInfo(memberDTO.getContactInfo());
-        existingMember.setEmail(memberDTO.getEmail());
-        existingMember.setNric(memberDTO.getNric());
-        existingMember.setMobile(memberDTO.getMobile());
-        existingMember.setRemark(memberDTO.getRemark());
-        existingMember.setBirthday(memberDTO.getBirthday());
-        existingMember.setSex(memberDTO.getSex());
-        existingMember.setRegistrationDate(memberDTO.getRegistrationDate());
-        existingMember.setMembershipExpiryDate(memberDTO.getMembershipExpiryDate());
-
-        Member updatedMember = memberService.updateMember(existingMember);
-        return ResponseEntity.ok(updatedMember);
     }
 
-// REMOVE OR COMMENT OUT THIS SECTION:
-// @GetMapping("/me")
-// public ResponseEntity<Member> getMyDetails(Authentication authentication) {
-//     String username = authentication.getName();
-//     Optional<Member> memberOpt = memberService.getMemberByUsername(username);
-//     return memberOpt.map(ResponseEntity::ok)
-//                     .orElseGet(() -> ResponseEntity.notFound().build());
-// }
 
     // Delete member
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMember(@PathVariable Long id) {
-        memberService.deleteMember(id);
-        return ResponseEntity.noContent().build();
+        try {
+            memberService.deleteMember(id);
+            return ResponseEntity.noContent().build();
+        } catch (MemberNotFoundException ex) { // Assuming deleteMember also throws MemberNotFoundException
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     // Search members by name

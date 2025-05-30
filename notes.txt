@@ -1,0 +1,17 @@
+export JWT_SECRET="your_very_secret_key"  # Linux/macOS
+set JWT_SECRET="your_very_secret_key"     # Windows
+set JWT_SECRET="e8c9b3a0d1f2e7c6b5a4d9f8e3c2b1a0d5f4e9c8b7a6d1f0e5c4b3a2d1f0e9c8"
+set JWT_SECRET="12345678901234567890123456789012"
+mvn clean compile 
+mvn spring-boot:run -X
+
+
+Save Logs to a File 
+
+
+
+
+Run the command:
+Windows: mvn spring-boot:run -X > output.log 2>&1
+Linux/macOS: mvn spring-boot:run -X > output.log 2>&1
+

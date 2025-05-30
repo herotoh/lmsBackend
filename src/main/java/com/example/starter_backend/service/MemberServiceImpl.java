@@ -1,23 +1,32 @@
+// MemberServiceImpl.java
 package com.example.starter_backend.service;
 
 import com.example.starter_backend.entity.Member;
-import com.example.starter_backend.entity.User; // Import User
+import com.example.starter_backend.entity.User;
 import com.example.starter_backend.repository.MemberRepository;
-import com.example.starter_backend.repository.UserRepository; // Import UserRepository
-
+import com.example.starter_backend.repository.UserRepository;
+import com.example.starter_backend.exception.MemberNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class MemberServiceImpl implements MemberService {
-    @Autowired
-    private MemberRepository memberRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(MemberServiceImpl.class);
+
+    private final MemberRepository memberRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    private UserRepository userRepository; // Keep this autowired for getMemberByUsername
+    public MemberServiceImpl(MemberRepository memberRepository, UserRepository userRepository) {
+        this.memberRepository = memberRepository;
+        this.userRepository = userRepository;
+    }
 
     @Override
     public List<Member> getAllMembers() {
@@ -31,31 +40,28 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public Member addMember(Member member) {
-        // Logging to verify field values before save
-        System.out.println("Saving member: " + member.getName() + ", email: " + member.getEmail() + ", sex: " + member.getSex());
-        return memberRepository.save(member); // This correctly returns the saved member
+        logger.info("Saving member: {} with email: {} and sex: {}", member.getName(), member.getEmail(), member.getSex());
+        return memberRepository.save(member);
     }
 
     @Override
     public Member updateMember(Long id, Member memberDetails) {
-        Optional<Member> optionalMember = memberRepository.findById(id);
-        if (optionalMember.isPresent()) {
-            Member member = optionalMember.get();
-            member.setName(memberDetails.getName());
-            member.setAddress(memberDetails.getAddress());
-            member.setContactInfo(memberDetails.getContactInfo());
-            member.setRegistrationDate(memberDetails.getRegistrationDate());
-            member.setMembershipExpiryDate(memberDetails.getMembershipExpiryDate());
-            member.setEmail(memberDetails.getEmail());
-            member.setNric(memberDetails.getNric());
-            member.setMobile(memberDetails.getMobile());
-            member.setRemark(memberDetails.getRemark());
-            member.setBirthday(memberDetails.getBirthday());
-            member.setSex(memberDetails.getSex());
-            return memberRepository.save(member);
-        } else {
-            throw new RuntimeException("Member not found with ID: " + id);
-        }
+        Member existingMember = memberRepository.findById(id)
+                .orElseThrow(() -> new MemberNotFoundException(id));
+
+        existingMember.setName(memberDetails.getName());
+        existingMember.setAddress(memberDetails.getAddress());
+        existingMember.setContactInfo(memberDetails.getContactInfo());
+        existingMember.setRegistrationDate(memberDetails.getRegistrationDate());
+        existingMember.setMembershipExpiryDate(memberDetails.getMembershipExpiryDate());
+        existingMember.setEmail(memberDetails.getEmail());
+        existingMember.setNric(memberDetails.getNric());
+        existingMember.setMobile(memberDetails.getMobile());
+        existingMember.setRemark(memberDetails.getRemark());
+        existingMember.setBirthday(memberDetails.getBirthday());
+        existingMember.setSex(memberDetails.getSex());
+
+        return memberRepository.save(existingMember);
     }
 
     @Override

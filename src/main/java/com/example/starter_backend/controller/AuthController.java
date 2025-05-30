@@ -1,5 +1,7 @@
+// AuthController.java
 package com.example.starter_backend.controller;
 
+import com.example.starter_backend.dto.LoginResponse;
 import com.example.starter_backend.dto.RegistrationRequest;
 import com.example.starter_backend.entity.Member;
 import com.example.starter_backend.entity.User;
@@ -8,13 +10,21 @@ import com.example.starter_backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+import com.example.starter_backend.security.JwtUtil; // Import JwtUtil
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.Optional; // <--- Ensure this import is present
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -26,12 +36,17 @@ public class AuthController {
     @Autowired
     private MemberService memberService;
 
-    // Your existing /api/auth/register method
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @PostMapping("/auth/register")
     public ResponseEntity<?> register(@RequestBody RegistrationRequest registrationRequest) {
         if (registrationRequest.getUsername() == null || registrationRequest.getUsername().trim().isEmpty() ||
-            registrationRequest.getPassword() == null || registrationRequest.getPassword().trim().isEmpty() ||
-            registrationRequest.getName() == null || registrationRequest.getName().trim().isEmpty()) {
+                registrationRequest.getPassword() == null || registrationRequest.getPassword().trim().isEmpty() ||
+                registrationRequest.getName() == null || registrationRequest.getName().trim().isEmpty()) {
             return new ResponseEntity<>("Username, Password, and Full Name are required.", HttpStatus.BAD_REQUEST);
         }
 
@@ -61,7 +76,7 @@ public class AuthController {
 
             Member savedMember = memberService.addMember(newMember);
 
-            User registeredUser = userService.registerUser(
+            userService.registerUser(
                     registrationRequest.getUsername(),
                     registrationRequest.getPassword(),
                     savedMember,
@@ -77,35 +92,56 @@ public class AuthController {
         }
     }
 
+@PostMapping("/auth/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+        try {
+            String username = credentials.get("username");
+            String password = credentials.get("password");
+
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password)
+            );
+
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String token = jwtUtil.generateToken(userDetails);
+
+            // --- NEW: Construct the LoginResponse DTO ---
+            List<String> roles = userDetails.getAuthorities().stream()
+                                            .map(grantedAuthority -> grantedAuthority.getAuthority())
+                                            .collect(Collectors.toList());
+
+            LoginResponse loginResponse = new LoginResponse(token, userDetails.getUsername(), roles);
+            // --- END NEW ---
+
+            return ResponseEntity.ok(loginResponse); // Return the DTO
+        } catch (AuthenticationException e) {
+            return new ResponseEntity<>("Invalid username or password", HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An unexpected error occurred during login.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUserDetails(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
-            // This case handles situations where there's no authenticated principal
             return new ResponseEntity<>("No authenticated user found.", HttpStatus.UNAUTHORIZED);
         }
 
         String username = userDetails.getUsername();
 
-        // Use Optional to handle the possibility of no user found gracefully
         Optional<User> userOptional = userService.findByUsername(username);
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            Member member = user.getMember(); // Get the associated Member
+            Member member = user.getMember();
 
             if (member != null) {
-                // Success: User found and has an associated Member. Return the Member object.
-                return ResponseEntity.ok(member); // Returns ResponseEntity<Member>
+                return ResponseEntity.ok(member);
             } else {
-                // This scenario means a User exists but is not linked to a Member.
-                // It indicates a potential data inconsistency if every User is supposed to have a Member.
-                return new ResponseEntity<>("Authenticated user has no associated member details.", HttpStatus.NOT_FOUND); // Returns ResponseEntity<String>
+                return new ResponseEntity<>("Authenticated user has no associated member details.", HttpStatus.NOT_FOUND);
             }
         } else {
-            // This scenario means the user was authenticated by Spring Security,
-            // but their details (username) could not be found in your UserRepository.
-            // This suggests a critical data inconsistency (e.g., user deleted after login).
-            return new ResponseEntity<>("Authenticated user's details not found in database.", HttpStatus.NOT_FOUND); // Returns ResponseEntity<String>
+            return new ResponseEntity<>("Authenticated user's details not found in database.", HttpStatus.NOT_FOUND);
         }
     }
 }

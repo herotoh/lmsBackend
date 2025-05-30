@@ -1,3 +1,4 @@
+// BookController.java
 package com.example.starter_backend.controller;
 
 import com.example.starter_backend.entity.Book;
@@ -6,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,23 +27,33 @@ public class BookController {
     public ResponseEntity<Book> getBookById(@PathVariable Long id) {
         Optional<Book> book = bookService.getBookById(id);
         return book.map(ResponseEntity::ok)
-                   .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public Book addBook(@RequestBody Book book) {
-        return bookService.addBook(book);
+    public ResponseEntity<Book> addBook(@RequestBody @Valid Book book) {
+        Book savedBook = bookService.addBook(book);
+        return ResponseEntity.ok(savedBook);
     }
 
     @PutMapping("/{id}")
-    public Book updateBook(@PathVariable Long id, @RequestBody Book bookDetails) {
-        return bookService.updateBook(id, bookDetails);
+    public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody @Valid Book bookDetails) {
+        try {
+            Book updatedBook = bookService.updateBook(id, bookDetails);
+            return ResponseEntity.ok(updatedBook);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build(); // Or handle the exception as appropriate
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
-        bookService.deleteBook(id);
-        return ResponseEntity.noContent().build();
+        try {
+            bookService.deleteBook(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build(); // Or handle the exception as appropriate
+        }
     }
 
     @GetMapping("/search/title")

@@ -1,53 +1,63 @@
 package com.example.starter_backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.io.Serializable;
+import java.time.LocalDate;
 
 @Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Book implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Title is mandatory")
     @Column(nullable = false)
     private String title;
 
+    @NotBlank(message = "Author is mandatory")
     @Column(nullable = false)
     private String author;
 
+    @NotBlank(message = "ISBN is mandatory")
     @Column(nullable = false, unique = true)
     private String isbn;
 
     private String publisher;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Category category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Language language;
+
+    @Min(value = 1450, message = "Year must be after 1450")
+    @Max(value = 2100, message = "Year must be before 2100")
+    private int yearPublished;
+
+    @Lob
+    private String description;
+
+    @Min(value = 0, message = "Total copies must be zero or more")
+    @Column(name = "total_copies", nullable = false)
+    private int totalCopies;
+
+    @Min(value = 0, message = "Available copies must be zero or more")
     @Column(name = "available_copies", nullable = false)
     private int availableCopies;
 
-    public Book() {}
+    private String shelfLocation;
 
-    // Getters and Setters
-    public Long getId() { return id; }
+    private String coverImageUrl;
 
-    public void setId(Long id) { this.id = id; }
-
-    public String getTitle() { return title; }
-
-    public void setTitle(String title) { this.title = title; }
-
-    public String getAuthor() { return author; }
-
-    public void setAuthor(String author) { this.author = author; }
-
-    public String getIsbn() { return isbn; }
-
-    public void setIsbn(String isbn) { this.isbn = isbn; }
-
-    public String getPublisher() { return publisher; }
-
-    public void setPublisher(String publisher) { this.publisher = publisher; }
-
-    public int getAvailableCopies() { return availableCopies; }
-
-    public void setAvailableCopies(int availableCopies) { this.availableCopies = availableCopies; }
+    private LocalDate addedDate = LocalDate.now();
 }

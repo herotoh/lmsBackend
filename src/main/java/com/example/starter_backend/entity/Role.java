@@ -1,5 +1,7 @@
 package com.example.starter_backend.entity;
 
-public class Role {
-    
+public enum Role {
+    ADMIN,
+    MEMBER,
+    LIBRARIAN // Added a Librarian role for example
 }

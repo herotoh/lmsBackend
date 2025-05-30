@@ -1,7 +1,9 @@
+// BookServiceImpl.java
 package com.example.starter_backend.service;
 
 import com.example.starter_backend.entity.Book;
 import com.example.starter_backend.repository.BookRepository;
+import com.example.starter_backend.exception.BookNotFoundException; // Custom Exception
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +17,7 @@ public class BookServiceImpl implements BookService {
     private BookRepository bookRepository;
 
     @Override
-    public List<Book> getAllBooks() {
+    public List<Book> getAvailableBooks() {
         return bookRepository.findAll();
     }
 
@@ -32,7 +34,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public Book updateBook(Long id, Book bookDetails) {
         Book existingBook = bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
+                .orElseThrow(() -> new BookNotFoundException(id)); // Use custom exception
 
         existingBook.setTitle(bookDetails.getTitle());
         existingBook.setAuthor(bookDetails.getAuthor());
@@ -46,7 +48,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public void deleteBook(Long id) {
         if (!bookRepository.existsById(id)) {
-            throw new RuntimeException("Book not found with id: " + id);
+            throw new BookNotFoundException(id); // Use custom exception
         }
         bookRepository.deleteById(id);
     }
