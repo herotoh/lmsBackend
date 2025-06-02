@@ -2,6 +2,7 @@
 package com.example.starter_backend.service;
 
 import com.example.starter_backend.entity.Member;
+import com.example.starter_backend.dto.MemberDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +45,7 @@ public interface MemberService {
      * @param memberDetails The updated member details
      * @return The updated member
      */
-    Member updateMember(Long id, Member memberDetails);
+    Member updateMember(Long id, Member member);
 
     Member updateMember(Member member); // Keep this overload if used elsewhere
 
