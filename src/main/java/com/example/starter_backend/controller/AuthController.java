@@ -104,6 +104,9 @@ public class AuthController {
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String token = jwtUtil.generateToken(userDetails);
+            
+            User user = userService.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+            Member member = user.getMember(); // Assuming User has a member field
 
             // --- NEW: Construct the LoginResponse DTO ---
             List<String> roles = userDetails.getAuthorities().stream()

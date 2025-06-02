@@ -22,7 +22,10 @@ public class BookController {
     public List<Book> getAllBooks() {
         return bookService.getAllBooks();
     }
-
+@GetMapping("/available")
+public List<Book> getAvailableBooks() {
+    return bookService.getAvailableBooks();
+}
     @GetMapping("/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable Long id) {
         Optional<Book> book = bookService.getBookById(id);
