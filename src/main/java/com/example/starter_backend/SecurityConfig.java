@@ -41,7 +41,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll() // Allow registration and login
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/loans/**").hasAnyRole("LIBRARIAN", "ADMIN")
+                .requestMatchers("/api/loans/**").permitAll() // Allow all users to access loans
                 .requestMatchers("/api/members/**").permitAll()
                 .requestMatchers("/api/books/**").permitAll()
                 .requestMatchers("/api/members/me").permitAll() 
@@ -54,10 +54,13 @@ public class SecurityConfig {
             .httpBasic(httpBasic -> httpBasic.disable())
             .formLogin(formLogin -> formLogin.disable());
 
+// ...
+
         return http.build();
     }
 //.requestMatchers("/api/members/**").hasAnyRole("ADMIN", "LIBRARIAN")
 //                .requestMatchers("/api/members/me").authenticated() 
+//.requestMatchers("/api/loans/**").hasAnyRole("LIBRARIAN", "ADMIN")
 
     @Bean
     public PasswordEncoder passwordEncoder() {
