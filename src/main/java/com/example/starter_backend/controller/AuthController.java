@@ -2,6 +2,7 @@
 package com.example.starter_backend.controller;
 
 import com.example.starter_backend.dto.LoginResponse;
+import com.example.starter_backend.dto.MemberDTO;
 import com.example.starter_backend.dto.RegistrationRequest;
 import com.example.starter_backend.entity.Member;
 import com.example.starter_backend.entity.User;
@@ -15,9 +16,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import com.example.starter_backend.security.JwtUtil; // Import JwtUtil
+import com.example.starter_backend.entity.Role;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -102,9 +105,10 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(username, password)
             );
 
+            SecurityContextHolder.getContext().setAuthentication(authentication);
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails);
-            
+            String jwt = jwtUtil.generateToken(userDetails);
+
             User user = userService.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
             Member member = user.getMember(); // Assuming User has a member field
 
@@ -113,7 +117,13 @@ public class AuthController {
                                             .map(grantedAuthority -> grantedAuthority.getAuthority())
                                             .collect(Collectors.toList());
 
-            LoginResponse loginResponse = new LoginResponse(token, userDetails.getUsername(), roles);
+            //LoginResponse loginResponse = new LoginResponse(token, userDetails.getUsername(), roles);
+                LoginResponse loginResponse = new LoginResponse();
+                loginResponse.setUsername(user.getUsername());
+            loginResponse.setToken(jwt);
+            //loginResponse.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
+            loginResponse.setRoles(user.getRoles().stream().map(Role::name).collect(Collectors.toList()));
+            loginResponse.setMember(member);
             // --- END NEW ---
 
             return ResponseEntity.ok(loginResponse); // Return the DTO

@@ -33,22 +33,27 @@ public class LoanController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-/*  20250602
+/*  20250602 */
     // Borrow a book
     @PostMapping("/borrow")
     public ResponseEntity<?> borrowBook(@RequestBody LoanRequestDTO loanRequest) {
         try {
+            System.out.println("Received loan request: " + loanRequest);
+
+            
             Loan loan = loanService.borrowBook(loanRequest.getBookId(), loanRequest.getMemberId());
             return ResponseEntity.status(HttpStatus.CREATED).body(loan);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
- */
-
+ 
+/* 
    @PostMapping("/borrow")
   public ResponseEntity<Loan> borrowBook(@RequestBody LoanRequestDTO loanRequestDTO) {
    try {
+    //System.out.println("Received loan request: " + loanRequestDTO);
+
     Loan newLoan = loanService.borrowBook(loanRequestDTO.getBookId(), loanRequestDTO.getMemberId());
     return new ResponseEntity<>(newLoan, HttpStatus.CREATED);
    } catch (Exception e) {
@@ -56,7 +61,7 @@ public class LoanController {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
    }
   }
-  
+  */
     // Return a book
     @PutMapping("/return/{loanId}")
     public ResponseEntity<?> returnBook(@PathVariable Long loanId) {

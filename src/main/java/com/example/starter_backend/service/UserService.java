@@ -1,6 +1,7 @@
 package com.example.starter_backend.service;
 
 import com.example.starter_backend.entity.Member;
+import com.example.starter_backend.dto.MemberDTO;
 import com.example.starter_backend.entity.User;
 import com.example.starter_backend.entity.Role; // Import the Role enum
 import com.example.starter_backend.repository.UserRepository;
