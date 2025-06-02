@@ -66,8 +66,8 @@ public class BookController {
         return bookService.searchBooksByAuthor(author);
     }
 
-    @GetMapping("/search/isbn")
-    public List<Book> searchByIsbn(@RequestParam String isbn) {
-        return bookService.searchBooksByIsbn(isbn);
-    }
+    //@GetMapping("/search/isbn")
+    //public List<Book> searchByIsbn(@RequestParam String isbn) {
+    //    return bookService.searchBooksByIsbn(isbn);
+    //}
 }

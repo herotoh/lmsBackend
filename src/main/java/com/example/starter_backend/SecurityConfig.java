@@ -42,8 +42,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll() // Allow registration and login
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/loans/**").hasAnyRole("LIBRARIAN", "ADMIN")
-                .requestMatchers("/api/members/**").hasAnyRole("ADMIN", "LIBRARIAN")
+                .requestMatchers("/api/members/**").permitAll()
                 .requestMatchers("/api/books/**").permitAll()
+                .requestMatchers("/api/members/me").permitAll() 
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -55,6 +56,8 @@ public class SecurityConfig {
 
         return http.build();
     }
+//.requestMatchers("/api/members/**").hasAnyRole("ADMIN", "LIBRARIAN")
+//                .requestMatchers("/api/members/me").authenticated() 
 
     @Bean
     public PasswordEncoder passwordEncoder() {

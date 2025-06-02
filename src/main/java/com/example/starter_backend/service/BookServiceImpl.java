@@ -22,6 +22,27 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public List<Book> getAllBooks() {
+        return bookRepository.findAll();
+    }
+
+    @Override
+    public List<Book> searchBooks(String title, String author, String isbn) {
+        // Example implementation: filter by non-null parameters
+        List<Book> books = bookRepository.findAll();
+        if (title != null && !title.isEmpty()) {
+            books.removeIf(book -> !book.getTitle().toLowerCase().contains(title.toLowerCase()));
+        }
+        if (author != null && !author.isEmpty()) {
+            books.removeIf(book -> !book.getAuthor().toLowerCase().contains(author.toLowerCase()));
+        }
+        if (isbn != null && !isbn.isEmpty()) {
+            books.removeIf(book -> !book.getIsbn().toLowerCase().contains(isbn.toLowerCase()));
+        }
+        return books;
+    }
+
+    @Override
     public Optional<Book> getBookById(Long id) {
         return bookRepository.findById(id);
     }
@@ -63,8 +84,8 @@ public class BookServiceImpl implements BookService {
         return bookRepository.findByAuthorContainingIgnoreCase(author);
     }
 
-    @Override
-    public List<Book> searchBooksByIsbn(String isbn) {
-        return bookRepository.findByIsbnContainingIgnoreCase(isbn);
-    }
+    //@Override
+    //public List<Book> searchBooksByIsbn(String isbn) {
+    //    return bookRepository.findByIsbnContainingIgnoreCase(isbn);
+    //}
 }

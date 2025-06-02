@@ -84,4 +84,10 @@ public class MemberServiceImpl implements MemberService {
         return userRepository.findByUsername(username)
                 .map(User::getMember);
     }
+
+    public Member getMemberByEmail(String email) {
+        Optional<Member> member = memberRepository.findByEmail(email);
+        return member.orElse(null); // Or throw a custom exception if you prefer
+    }
+
 }

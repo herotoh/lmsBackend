@@ -25,6 +25,10 @@ public class Loan {
     @JoinColumn(name = "user_id") // Changed from member_id to user_id
     private User user; // The user who borrowed the book (not Member directly)
 
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "member_id")  // New field and join column for Member
+    private Member member;
+    
     private LocalDate issueDate;
     private LocalDate dueDate;
     private LocalDate returnDate; // New field for actual return date
